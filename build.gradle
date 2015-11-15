@@ -1,0 +1,22 @@
+group 'org'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.google.code.gson:gson:2.4'
+    compile 'org.apache.httpcomponents:httpclient:4.5.1'
+    compile 'org.javassist:javassist:3.20.0-GA'
+    compile 'com.google.guava:guava:19.0-rc2'
+    compile 'org.reflections:reflections-maven:0.9.9-RC2'
+    compile 'org.atteo.classindex:classindex:3.4'
+    compile 'org.apache.httpcomponents:httpcore-nio:4.4.4'
+    compile 'org.apache.httpcomponents:httpcore:4.4.4'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
