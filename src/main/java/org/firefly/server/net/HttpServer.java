@@ -1,5 +1,6 @@
 package org.firefly.server.net;
 
+import com.google.common.reflect.ClassPath;
 import com.sun.istack.internal.NotNull;
 import org.apache.http.*;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -10,14 +11,15 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 import org.apache.http.util.EntityUtils;
 import org.firefly.server.main.*;
-import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -46,9 +48,20 @@ public class HttpServer {
 
             final String uri = request.getRequestLine().getUri();
 
+            ClassPath classpath = ClassPath.from(Thread.currentThread()
+                    .getContextClassLoader());
+
             for(String path : controllersPaths) {
-                Reflections reflections = new Reflections(path);
-                Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Controller.class);
+
+                Set<Class<?>> annotated = new HashSet<>();
+
+                for(ClassPath.ClassInfo classInfo : classpath.getTopLevelClassesRecursive(path)) {
+                    Class<?> c = classInfo.load();
+
+                    if(c.isAnnotationPresent(Controller.class)) {
+                        annotated.add(c);
+                    }
+                }
 
                 for(Class<?> c : annotated) {
 
@@ -96,7 +109,7 @@ public class HttpServer {
 
                                                     String resourcePath = rs.path();
 
-                                                    Pattern pattern = Pattern.compile("^/"+controller.path()+"/"+resourcePath+"$");
+                                                    Pattern pattern = Pattern.compile("^/"+controller.path()+"/"+resourcePath+"(\\?(.*))?$");
                                                     Matcher matcher = pattern.matcher(uri);
 
                                                     boolean isFound = false;
@@ -145,7 +158,6 @@ public class HttpServer {
                                             Resource rs = index.getAnnotation(Resource.class);
 
                                             if (index != null && rs.method().name().equalsIgnoreCase(request.getRequestLine().getMethod()) && rs.path().isEmpty()) {
-                                                index.setAccessible(true);
                                                 index.invoke(ctr, ((Context) baseController));
                                                 return;
                                             }
@@ -156,6 +168,10 @@ public class HttpServer {
 
                                 }
 
+                            } catch(InvocationTargetException e) {
+                                response.setStatusCode(500);
+                                response.setEntity(new StringEntity("Exception: " + e.getTargetException().getMessage()));
+                                return;
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             HttpServer server = new HttpServer(4253, 10000);
-            server.addControllerPath("org.firefly.controllers");
+            server.addControllerPath("org.firefly.server.controllers");
 
             server.start();
         } catch (IOException e) {
