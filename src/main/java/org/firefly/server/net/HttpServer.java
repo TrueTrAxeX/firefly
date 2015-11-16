@@ -1,7 +1,6 @@
 package org.firefly.server.net;
 
 import com.google.common.reflect.ClassPath;
-import com.sun.istack.internal.NotNull;
 import org.apache.http.*;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.config.SocketConfig;
@@ -37,7 +36,7 @@ public class HttpServer {
 
     private Charset charset = Charset.forName("UTF-8");
 
-    public void setCharset(@NotNull Charset charset) {
+    public void setCharset(Charset charset) {
         this.charset = charset;
     }
 
